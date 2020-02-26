@@ -19,6 +19,8 @@ parser.add_argument('--wd', '-wd', help="Weight Decay")
 parser.add_argument('--momentum', '-mo', help="Momentum")
 parser.add_argument('--step_size', '-mo', help="Step size for Learning Rate decay")
 parser.add_argument('--epochs', '-e', help="Number of Epochs")
+parser.add_argument('--random_noise', '-e', help="Whether or not to insert random\
+                                                  noise to embeddings")
 parser.add_argument('--batch_size', '-bs', help="Batch Size")
 args = parser.parse_args()
 

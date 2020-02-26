@@ -17,22 +17,22 @@ def splitAndSaveData(filepath):
     
     X_tv, X_test, y_tv, y_test = train_test_split(data['text'], \
                                                       data['target'],
-                                                      test_size=0.3,
+                                                      test_size=0.15,
                                                       random_state=1)
     
     X_train, X_val, y_train, y_val = train_test_split(X_tv, \
                                                       y_tv,
-                                                      test_size=0.2,
+                                                      test_size=0.1765,
                                                       random_state=1)
     
     
-    train_data = pd.DataFrame({'text' : X_train, 'target' : y_train})
-    valid_data = pd.DataFrame({'text' : X_val, 'target' : y_val})
-    test_data = pd.DataFrame({'text' : X_test, 'target' : y_test})
+    train_data = pd.DataFrame({'target' : y_train, 'text' : X_train})
+    valid_data = pd.DataFrame({'target' : y_val, 'text' : X_val})
+    test_data = pd.DataFrame({'target' : y_test, 'text' : X_test})
     
-    train_data.to_csv('train.csv')
-    valid_data.to_csv('valid.csv')
-    test_data.to_csv('test.csv')
+    train_data.to_csv('train.csv', index=False)
+    valid_data.to_csv('valid.csv', index=False)
+    test_data.to_csv('test.csv', index=False)
     
     return train_data, valid_data, test_data
 
