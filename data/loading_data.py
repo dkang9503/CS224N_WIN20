@@ -26,9 +26,12 @@ def splitAndSaveData(filepath):
                                                       random_state=1)
     
     
-    train_data = pd.DataFrame({'target' : y_train, 'text' : X_train})
-    valid_data = pd.DataFrame({'target' : y_val, 'text' : X_val})
-    test_data = pd.DataFrame({'target' : y_test, 'text' : X_test})
+    train_data = pd.DataFrame({'target' : y_train, \
+                               'text' : X_train.replace('\n', '', regex = True)})
+    valid_data = pd.DataFrame({'target' : y_val, \
+                               'text' : X_val.replace('\n', '', regex = True)})
+    test_data = pd.DataFrame({'target' : y_test, \
+                              'text' : X_test.replace('\n', '', regex = True)})
     
     train_data.to_csv('train.csv', index=False)
     valid_data.to_csv('valid.csv', index=False)
@@ -95,10 +98,13 @@ def createVocab(train_directory="train.csv", write=False):
 if __name__ == '__main__()':
 
     #Split data into train/val/test from original data csv
-    train_data, valid_data, test_data =splitAndSaveData('original_data_file.csv')
+    train_data, valid_data, test_data =splitAndSaveData('original_data_file _no_url.csv')
+    
+    #Simple txt file so we can do EDA
+    train_data.to_csv('train.txt', sep='\t', header=False,index=False)
     
     #Create iterators with data
     train_iterator, valid_iterator, test_iterator= createIterators(train_data, valid_data, test_data)
     
     #Create vocab embedding
-    vocab = createVocab() 
+    vocab = createVocab(write = True) 
