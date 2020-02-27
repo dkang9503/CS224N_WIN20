@@ -1,12 +1,23 @@
-import torch.nn as nn
 import torch
 from torchtext.data import Field
 from torchtext.data import TabularDataset
 from torchtext.data import Iterator
+from torchtext.data import BucketIterator
 from torchtext.vocab import GloVe
 import pandas as pd
-import pickle
 from sklearn.model_selection import train_test_split
+
+class BatchWrapper:
+    def __init__(self, dl, x_var, y_var):
+        self.dl, self.x_var, self.y_var = dl, x_var, y_var # we pass in the list of attributes for x 
+    def __iter__(self):
+        for batch in self.dl:
+            x = getattr(batch, self.x_var) # Retrieves text for batch
+            y = getattr(batch, self.y_var) # Retrieves label for batch
+            yield (x, y)
+        
+    def __len__(self):
+        return len(self.dl)   
 
 def splitAndSaveData(filepath):
     '''
@@ -39,7 +50,6 @@ def splitAndSaveData(filepath):
     
     return train_data, valid_data, test_data
 
-
 def createIterators(train_data, valid_data, test_data, batch_size=32, \
                     write=False, path="../Data/"):
     '''
@@ -49,7 +59,7 @@ def createIterators(train_data, valid_data, test_data, batch_size=32, \
     TEXT = Field(sequential=True)
     LABEL = Field(sequential=False, use_vocab=False)
     
-    tv_datafields = [("text", TEXT), ("target", LABEL)]
+    tv_datafields = [("target", LABEL), ("text", TEXT)]
     
     train, valid, test = TabularDataset.splits(
                path = ".",
@@ -60,43 +70,32 @@ def createIterators(train_data, valid_data, test_data, batch_size=32, \
                skip_header=True, 
                fields=tv_datafields)
     
-    #Create Iterators to train over
-    train_iterator = Iterator(train, sort_key = lambda x: len(x.text), batch_size=batch_size)
-    valid_iterator = Iterator(valid, sort_key = lambda x: len(x.text), batch_size=batch_size)
-    test_iterator = Iterator(test, sort_key = lambda x: len(x.text), batch_size=batch_size)    
-
-    return train_iterator, valid_iterator, test_iterator
-
-def createVocab(train_directory="train.csv", write=False):
-    '''
-        Downloads GloVe and returns a vocab object. GloVe is saved
-        one directory below the GitHub directory called 'solver_cache'        
-    '''
-    
-    TEXT = Field(sequential=True)
-    LABEL = Field(sequential=False, use_vocab=False)
-    train = TabularDataset(path='train.csv', format = 'csv', skip_header=True,
-                           fields=[("text", TEXT), ("target", LABEL)])
-    
     # This downloads GloVe if not already downloaded.
     glove_object = GloVe(name = 'twitter.27B', dim=100, cache="../../solver_cache")
-    TEXT.build_vocab(train, vectors = glove_object)        
-    
-    vocab = TEXT.vocab
+    TEXT.build_vocab(train, vectors = glove_object)
     
     # Initialize out of vocab word vectors
-    for i in range(len(vocab)):
-        if len(vocab.vectors[i,:].nonzero()) == 0:
-            torch.nn.init.normal_(vocab.vectors[i])
-            
-    if write:
-        pickle.dump(vocab, open('vocab_from_train.pkl', 'wb'))
-        
-    return vocab
+    torch.manual_seed(1)
+    for i in range(len(TEXT.vocab)):
+        if len(TEXT.vocab.vectors[i,:].nonzero()) == 0:
+            torch.nn.init.normal_(TEXT.vocab.vectors[i])
     
+    #Create Iterators to train over
+    train_iter, valid_iter = BucketIterator.splits((train, valid), \
+                                                   batch_sizes=(batch_size,batch_size),\
+                                                   sort_key=lambda x: len(x.text),\
+                                                   sort_within_batch=False, \
+                                                   repeat=False)                                                  
+    test_iter = Iterator(test, sort = False, batch_size=batch_size, \
+                             sort_within_batch=False, repeat=False)    
+    
+    train_dl = BatchWrapper(train_iter, "text", "target")
+    valid_dl = BatchWrapper(valid_iter, "text", "target")
+    test_dl = BatchWrapper(test_iter, "text", "target")
 
-if __name__ == '__main__()':
+    return train_dl, valid_dl, test_dl
 
+if __name__ == '__main__':
     #Split data into train/val/test from original data csv
     train_data, valid_data, test_data =splitAndSaveData('original_data_file _no_url.csv')
     
@@ -104,7 +103,4 @@ if __name__ == '__main__()':
     train_data.to_csv('train.txt', sep='\t', header=False,index=False)
     
     #Create iterators with data
-    train_iterator, valid_iterator, test_iterator= createIterators(train_data, valid_data, test_data)
-    
-    #Create vocab embedding
-    vocab = createVocab(write = True) 
+    train_iter, valid_iter, test_iter = createIterators(train_data, valid_data, test_data)    

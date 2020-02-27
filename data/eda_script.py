@@ -33,7 +33,7 @@ def gen_eda(train_orig, output_file, alpha, num_aug=9):
     newTexts = np.concatenate((texts, textsToReturn))
     
     #Create new dataframe and export into a csv
-    newData = pd.DataFrame({'target': newTargets, 'texts': newTexts})
+    newData = pd.DataFrame({'target': newTargets, 'text': newTexts})
     newData.to_csv(output_file, index=False)
             
 
