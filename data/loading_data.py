@@ -104,3 +104,6 @@ if __name__ == '__main__':
     
     #Create iterators with data
     train_iter, valid_iter, test_iter = createIterators(train_data, valid_data, test_data)    
+    
+    #run this line to see how the batch iterator works
+    # next(train_iter.__iter__())
