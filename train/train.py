@@ -1,12 +1,11 @@
 import torch
+from tqdm import tqdm
 import torch.nn as nn
 import pandas as pd
 import argparse
 import sys
 from datetime import date
 from torch.utils.tensorboard import SummaryWriter
-import torchvision
-import torchvision.transforms as transforms
 sys.path.insert(0, '../data')
 from loading_data import createIterators
 
@@ -24,10 +23,10 @@ parser.add_argument('--random_noise', '-e', help="Whether or not to insert rando
 parser.add_argument('--batch_size', '-bs', help="Batch Size")
 args = parser.parse_args()
 
-def train(train_iterator, valid_iterator, model, device):        
+def train(train_iter, valid_iter, model, device):        
     
-    train_size = len(train_iterator.data())
-    valid_size = len(valid_iterator.data())
+    train_size = len(train_iter.dl.dataset)
+    valid_size = len(valid_iter.dl.dataset)
     
     loss_fcn = nn.BCELoss()        
     if args.optimizer == "adam":
@@ -55,8 +54,7 @@ def train(train_iterator, valid_iterator, model, device):
         train_correct = 0
         
         model.train()
-        for batch in train_iterator:
-            X, y = batch
+        for X, y in tqdm(train_iter):            
             preds = model(X)
             loss = loss_fcn(preds, y)
             
@@ -69,23 +67,24 @@ def train(train_iterator, valid_iterator, model, device):
             train_correct += torch.sum((preds > .5).float() == y)
                         
         ### VALIDATION ###
-        valid_loss = 0
-        valid_correct = 0
+        val_loss = 0
+        val_correct = 0
         
         model.eval()
-        for batch in valid_iterator:
+        for batch in valid_iter:
             X, y = batch
             preds = model(X)
             loss = loss_fcn(preds, y)
             
-            valid_loss += loss.item()
-            valid_correct += torch.sum((preds > .5).float() == y)
+            val_loss += loss.item()
+            val_correct += torch.sum((preds > .5).float() == y)
             
+        print('Epoch: {}, Training Loss: {:.4f}, Validation Loss: {:.4f}'.format(epoch, train_loss, val_loss))
         ### UPDATE TENSORBOARD ###
         writer.add_scalar('Training Loss', train_loss, epoch)
         writer.add_scalar('Training Accuracy', train_correct/train_size, epoch)
-        writer.add_scalar('Validation Loss', valid_loss, epoch)
-        writer.add_scalar('Validation Accuracy', valid_correct/valid_size, epoch)
+        writer.add_scalar('Validation Loss', val_loss, epoch)
+        writer.add_scalar('Validation Accuracy', val_correct/valid_size, epoch)
     
     
 def main():
@@ -94,17 +93,17 @@ def main():
     valid_data = pd.read_csv('../data/valid.csv')
     test_data = pd.read_csv('../data/test.csv')
     
-    train_iterator, valid_iterator, test_iterator= createIterators(train_data, 
-                                                                   valid_data, 
-                                                                   test_data,
-                                                                   batch_size = args.batch_size)
+    train_iter, valid_iter, test_iter= createIterators(train_data, 
+                                                       valid_data, 
+                                                       test_data,
+                                                       batch_size = args.batch_size)
     
     #Declare model
     model = torch.nn.LSTM(5, 2) #Place holder for now
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
     #Train our model
-    train(train_iterator, valid_iterator, model, device)    
+    train(train_iter, valid_iter, model, device)    
 
 if __name__ == '__main__':
     main()
