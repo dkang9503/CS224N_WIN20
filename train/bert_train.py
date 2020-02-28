@@ -52,7 +52,7 @@ def train(train_iter, valid_iter, model, device):
     today = date.today()
     date_prefix = today.strftime("%m_%d")
     log_dir_suffix = f"{date_prefix}_BERT_{args.dataset}_lr_{args.lr}_epochs_{args.epochs}_batch_size_{args.batch_size}"
-    log_dir = "../logs/" + log_dire_suffix
+    log_dir = "../logs/" + log_dir_suffix
     writer = SummaryWriter(log_dir=log_dir)
     
     best_loss = 1e9
