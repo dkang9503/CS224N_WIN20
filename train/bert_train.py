@@ -51,8 +51,11 @@ def train(train_iter, valid_iter, model, device):
     #Create Tensorboard    
     today = date.today()
     date_prefix = today.strftime("%m_%d")
-    log_dir = f"../logs/{date_prefix}_BERT_{args.dataset}_lr_{args.lr}_epochs_{args.epochs}_batch_size_{args.batch_size}"
+    log_dir_suffix = f"{date_prefix}_BERT_{args.dataset}_lr_{args.lr}_epochs_{args.epochs}_batch_size_{args.batch_size}"
+    log_dir = "../logs/" + log_dire_suffix
     writer = SummaryWriter(log_dir=log_dir)
+    
+    best_loss = 1e9
     
     # Set the seed value all over the place to make this reproducible.
     seed_val = 42
@@ -61,7 +64,7 @@ def train(train_iter, valid_iter, model, device):
     torch.manual_seed(seed_val)
     torch.cuda.manual_seed_all(seed_val)
           
-    model.zero_grad()
+    model.zero_grad()    
     
     for epoch in range(args.epochs):
         ### TRAINING ###
@@ -91,6 +94,7 @@ def train(train_iter, valid_iter, model, device):
             scheduler.step()
             model.zero_grad()
             
+            #Add to tensorboard
             writer.add_scalar('Iteration Training Loss', loss.item(), 
                               epoch*train_size + i + 1)
         
@@ -116,6 +120,7 @@ def train(train_iter, valid_iter, model, device):
             logits = outputs[1]
             valid_correct += torch.sum(torch.argmax(logits, 1) == labels).item()
             
+            #Add to tensorboard
             writer.add_scalar('Iteration Validation Loss', loss.item(), 
                               epoch*valid_size + i + 1)
             
@@ -129,6 +134,11 @@ def train(train_iter, valid_iter, model, device):
                           train_correct/(train_size * args.batch_size), epoch)
         writer.add_scalar('Epoch Validation Accuracy', 
                           valid_correct/(valid_size * args.batch_size), epoch)
+        
+        ### Save if Model gets best loss ###
+        if np.mean(valid_loss) < best_loss:
+            best_loss = np.mean(valid_loss)
+            torch.save(model.state_dict(), "../../saved_models/" + log_dir_suffix + ".pth")
 
 def returnDataloader(data, batch_size):
     sentences = data.text.values
