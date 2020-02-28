@@ -5,6 +5,7 @@ from torchtext.data import Iterator
 from torchtext.data import BucketIterator
 from torchtext.vocab import GloVe
 import pandas as pd
+import re
 from sklearn.model_selection import train_test_split
 
 class BatchWrapper:
@@ -22,7 +23,7 @@ class BatchWrapper:
 def splitAndSaveData(filepath):
     '''
         Given filepath of original dataset, will split data and return 3
-        pandas dataframe objects.
+        pandas dataframe objects. Split is 70-15-15 train-valid-test
     '''
     data = pd.read_csv(filepath)    
     
@@ -36,19 +37,52 @@ def splitAndSaveData(filepath):
                                                       test_size=0.1765,
                                                       random_state=1)
     
+    X_train = cleanData(X_train)
+    X_val = cleanData(X_test)
+    X_test = cleanData(X_test)
     
     train_data = pd.DataFrame({'target' : y_train, \
-                               'text' : X_train.replace('\n', '', regex = True)})
+                               'text' : X_train})
     valid_data = pd.DataFrame({'target' : y_val, \
-                               'text' : X_val.replace('\n', '', regex = True)})
+                               'text' : X_val})
     test_data = pd.DataFrame({'target' : y_test, \
-                              'text' : X_test.replace('\n', '', regex = True)})
+                              'text' : X_test})
     
     train_data.to_csv('train.csv', index=False)
     valid_data.to_csv('valid.csv', index=False)
     test_data.to_csv('test.csv', index=False)
     
     return train_data, valid_data, test_data
+
+def cleanData(listOfText):
+        
+    toReturn = []
+    
+    for line in listOfText:        
+        clean_line = ""
+        line = line.replace("’", "")
+        line = line.replace("'", "")
+        line = line.replace("-", " ") #replace hyphens with spaces
+        line = line.replace("\t", " ")
+        line = line.replace("\n", " ")
+        line = re.sub('\\\\[a-zA-z0-9]+', '', line)
+        line = line.lower()
+        for char in line:
+            if char in 'qwertyuiopasdfghjklzxcvbnm 1234567890#,@':
+                clean_line += char
+            else:
+                clean_line += ' '
+        
+        clean_line = re.sub(' +',' ',clean_line) #delete extra spaces
+        if clean_line[0] == ' ':
+            clean_line = clean_line[1:]
+        if clean_line[-1] == ' ':
+            clean_line = clean_line[:-1]
+            
+        toReturn.append(clean_line)
+        
+    return toReturn
+        
 
 def createIterators(train_data, valid_data, test_data, batch_size=32, \
                     write=False, path="../Data/"):
@@ -97,10 +131,7 @@ def createIterators(train_data, valid_data, test_data, batch_size=32, \
 
 if __name__ == '__main__':
     #Split data into train/val/test from original data csv
-    train_data, valid_data, test_data =splitAndSaveData('original_data_file _no_url.csv')
-    
-    #Simple txt file so we can do EDA
-    train_data.to_csv('train.txt', sep='\t', header=False,index=False)
+    train_data, valid_data, test_data =splitAndSaveData('original_data_file_no_url.csv')    
     
     #Create iterators with data
     train_iter, valid_iter, test_iter = createIterators(train_data, valid_data, test_data)    
