@@ -1,4 +1,4 @@
 #!/bin/bash
-#python backtranslation2.py --input=train.csv --lang=es
-python backtranslation2.py --input=train.csv --lang=ja
-python backtranslation2.py --input=train.csv --lang=de
+python backtranslation.py --input=train.csv --lang=es
+python backtranslation.py --input=train.csv --lang=ja
+python backtranslation.py --input=train.csv --lang=de
