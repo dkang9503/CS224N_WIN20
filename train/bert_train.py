@@ -110,10 +110,7 @@ def train(train_iter, valid_iter, model, device):
             loss = outputs[0]
             valid_loss.append(loss.item())
             logits = outputs[1]
-            valid_correct += torch.sum(torch.argmax(logits, 1) == labels).item()
-            
-            writer.add_scalar('Iteration Validation Loss', loss.item(), 
-                              epoch*valid_size + i + 1)
+            valid_correct += torch.sum(torch.argmax(logits, 1) == labels).item()                       
             
         ### UPDATE TENSORBOARD ###
         writer.add_scalar('Epoch Training Loss', np.mean(train_loss), epoch)
