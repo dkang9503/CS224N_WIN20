@@ -28,7 +28,7 @@ df_val = pd.read_csv('./data/valid.csv')
 
 # Report the number of sentences.
 print('Number of training sentences: {:,}\n'.format(df_train.shape[0]))
-print('Number of validation sentences: {:,}\n'.format(df_train.shape[0]))
+print('Number of validation sentences: {:,}\n'.format(df_val.shape[0]))
 
 train_sentences = df_train.text.values
 train_labels = df_train.target.values

@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 from tqdm import tqdm
 import torch.nn as nn
 import pandas as pd
@@ -12,15 +13,15 @@ from loading_data import createIterators
 parser = argparse.ArgumentParser()
 parser.add_argument('--model', '-m', help="Which model to use")
 parser.add_argument('--dataset', '-m', help="Which dataset to use")
-parser.add_argument('--optimizer', '-opt', help="Which optimizer to use")
-parser.add_argument('--lr', '-lr', help="Learning Rate")
+parser.add_argument('--optimizer', '-opt', help="Which optimizer to use", nargs='?', type=str, const="adam")
+parser.add_argument('--lr', '-lr', help="Learning Rate", nargs='?', type=int, const=2e-5)
 parser.add_argument('--wd', '-wd', help="Weight Decay")
-parser.add_argument('--momentum', '-mo', help="Momentum")
-parser.add_argument('--step_size', '-mo', help="Step size for Learning Rate decay")
-parser.add_argument('--epochs', '-e', help="Number of Epochs")
+parser.add_argument('--momentum', '-mo', help="Momentum", nargs='?', type=int, const=9e-1)
+parser.add_argument('--step_size', '-step', help="Step size for Learning Rate decay")
+parser.add_argument('--epochs', '-e', help="Number of Epochs", nargs='?', type=int, const=4)
+parser.add_argument('--batch_size', '-bs', help="Batch Size", nargs='?', type=int, const=32)
 parser.add_argument('--random_noise', '-e', help="Whether or not to insert random\
                                                   noise to embeddings")
-parser.add_argument('--batch_size', '-bs', help="Batch Size")
 args = parser.parse_args()
 
 def train(train_iter, valid_iter, model, device):        
@@ -48,9 +49,9 @@ def train(train_iter, valid_iter, model, device):
     
     model.to(device)            
     
-    for epoch in args.epochs:        
+    for epoch in range(args.epochs):
         ### TRAINING ###
-        train_loss = 0
+        train_loss = []
         train_correct = 0
         
         model.train()
@@ -63,27 +64,29 @@ def train(train_iter, valid_iter, model, device):
             loss.backward()
             optimizer.step()
             
-            train_loss += loss.item()        
+            train_loss.append(loss.item())
             train_correct += torch.sum((preds > .5).float() == y)
                         
         ### VALIDATION ###
-        val_loss = 0
+        val_loss = []
         val_correct = 0
         
         model.eval()
         for batch in valid_iter:
-            X, y = batch
-            preds = model(X)
-            loss = loss_fcn(preds, y)
-            
-            val_loss += loss.item()
-            val_correct += torch.sum((preds > .5).float() == y)
+            with torch.no_grad():
+                X, y = batch
+                preds = model(X)
+                loss = loss_fcn(preds, y)
+                
+                val_loss.append(loss.item())
+                val_correct += torch.sum((preds > .5).float() == y)
             
         print('Epoch: {}, Training Loss: {:.4f}, Validation Loss: {:.4f}'.format(epoch, train_loss, val_loss))
+        
         ### UPDATE TENSORBOARD ###
-        writer.add_scalar('Training Loss', train_loss, epoch)
+        writer.add_scalar('Training Loss', np.mean(train_loss), epoch)
         writer.add_scalar('Training Accuracy', train_correct/train_size, epoch)
-        writer.add_scalar('Validation Loss', val_loss, epoch)
+        writer.add_scalar('Validation Loss', np.mean(val_loss), epoch)
         writer.add_scalar('Validation Accuracy', val_correct/valid_size, epoch)
     
     
