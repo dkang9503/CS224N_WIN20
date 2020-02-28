@@ -16,7 +16,7 @@ def gen_eda(train_orig, output_file, da_type, alpha, num_aug=9):
     targets = data['target'].values
     texts = data['text'].values
     
-    targetsToReturn = np.zeros(num_aug*len(targets))
+    targetsToReturn = np.zeros(num_aug*len(targets), dtype=int)
     textsToReturn = np.empty(num_aug*len(targets), dtype=object)
 
     for i, target in enumerate(targets):        
