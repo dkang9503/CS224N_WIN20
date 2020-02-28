@@ -38,7 +38,7 @@ def gen_eda(train_orig, output_file, da_type, alpha, num_aug=9):
     newData.to_csv(output_file, index=False)
             
 
-if __name__ == "__main__":        
+if __name__ == "__main__":
         
     da_type = args.da_type.split(' ')
     join_char = "_"
