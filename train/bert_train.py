@@ -3,12 +3,11 @@ import pandas as pd
 from tqdm import tqdm
 import random
 from datetime import date
-from torch.utils.data import TensorDataset, DataLoader, RandomSampler
 from transformers import BertForSequenceClassification, get_linear_schedule_with_warmup, AdamW
 from torch.utils.tensorboard import SummaryWriter
 import sys
 sys.path.insert(0, '../utils')
-from bert_utils import tokenize, make_mask
+from bert_utils import returnDataloader
 import torch
 import argparse
 
@@ -139,29 +138,6 @@ def train(train_iter, valid_iter, model, device):
         if np.mean(valid_loss) < best_loss:
             best_loss = np.mean(valid_loss)
             torch.save(model.state_dict(), "../../saved_models/" + log_dir_suffix + ".pth")
-
-def returnDataloader(data, batch_size):
-    sentences = data.text.values
-    labels = data.target.values
-    
-    # Tokenize all of the sentences and map the tokens to their word IDs.
-    tokens = tokenize(sentences)
-    
-    # Create attention masks
-    masks = make_mask(tokens)
-    
-    # Convert all inputs and labels into torch tensors, the required datatype
-    # for our model.
-    tokens  = torch.tensor(tokens)  
-    labels = torch.tensor(labels)   
-    masks  = torch.tensor(masks)
-    
-    # Create the DataLoader
-    dataset = TensorDataset(tokens, masks, labels)
-    sampler = RandomSampler(dataset)
-    dataloader = DataLoader(dataset, sampler=sampler, batch_size=batch_size)
-    
-    return dataloader
 
 def main():
     print(args)

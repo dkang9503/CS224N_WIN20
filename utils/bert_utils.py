@@ -1,5 +1,7 @@
 import numpy as np
+import torch
 import datetime
+from torch.utils.data import TensorDataset, DataLoader, RandomSampler
 from transformers import BertTokenizer
 
 print('Loading BERT tokenizer...')
@@ -64,3 +66,26 @@ def format_time(elapsed):
 
     # Format as hh:mm:ss
     return str(datetime.timedelta(seconds=elapsed_rounded))
+
+def returnDataloader(data, batch_size):
+    sentences = data.text.values
+    labels = data.target.values
+    
+    # Tokenize all of the sentences and map the tokens to their word IDs.
+    tokens = tokenize(sentences)
+    
+    # Create attention masks
+    masks = make_mask(tokens)
+    
+    # Convert all inputs and labels into torch tensors, the required datatype
+    # for our model.
+    tokens  = torch.tensor(tokens)  
+    labels = torch.tensor(labels)   
+    masks  = torch.tensor(masks)
+    
+    # Create the DataLoader
+    dataset = TensorDataset(tokens, masks, labels)
+    sampler = RandomSampler(dataset)
+    dataloader = DataLoader(dataset, sampler=sampler, batch_size=batch_size)
+    
+    return dataloader
