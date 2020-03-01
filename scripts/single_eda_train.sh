@@ -1,4 +1,6 @@
 #!/bin/bash
+python ../train/bert_train.py --dataset=train
+
 python ../train/bert_train.py --dataset=rd_alpha_0.1_num_aug_1 
 python ../train/bert_train.py --dataset=ri_alpha_0.1_num_aug_1
 python ../train/bert_train.py --dataset=rs_alpha_0.1_num_aug_1

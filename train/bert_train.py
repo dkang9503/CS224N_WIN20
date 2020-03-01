@@ -7,11 +7,10 @@ from transformers import BertForSequenceClassification, get_linear_schedule_with
 from torch.utils.tensorboard import SummaryWriter
 import sys
 sys.path.insert(0, '../utils')
-from bert_utils import returnDataloader
+from bert_utils import returnDataloader, flat_accuracy
 import torch
 import argparse
 
-'''
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', '-m', required=True, help="Which dataset to use, without .csv suffix")
 parser.add_argument('--optimizer', '-opt', help="Which optimizer to use", nargs='?', type=str, default="adam")
@@ -19,14 +18,9 @@ parser.add_argument('--lr', '-lr', help="Learning Rate", nargs='?', type=int, de
 parser.add_argument('--wd', '-wd', help="Weight Decay")
 parser.add_argument('--momentum', '-mo', help="Momentum", nargs='?', type=int, default=9e-1)
 parser.add_argument('--step_size', '-step', help="Step size for Learning Rate decay")
-parser.add_argument('--epochs', '-e', help="Number of Epochs", nargs='?', type=int, default=6)
+parser.add_argument('--epochs', '-e', help="Number of Epochs", nargs='?', type=int, default=5)
 parser.add_argument('--batch_size', '-bs', help="Batch Size", nargs='?', type=int, default=16)
 args = parser.parse_args()
-'''
-
-from collections import namedtuple
-MyStruct = namedtuple("MyStruct", "dataset optimizer lr wd momentum step_size epochs batch_size")
-args = MyStruct("sr_alpha_0.1_num_aug_1", "adam", 2e-5, 1e-5, 9e-1, 10, 5, 32)
 
 def train(train_iter, valid_iter, model, device):
     # This training code is based on the `run_glue.py` script here:
@@ -108,7 +102,7 @@ def train(train_iter, valid_iter, model, device):
        
         ### VALIDATION ###        
         valid_loss = []
-        valid_correct = 0
+        valid_correct = 0                    
         
         model.eval()
         for i, batch in enumerate(valid_iter):
@@ -118,27 +112,28 @@ def train(train_iter, valid_iter, model, device):
             
             with torch.no_grad():
                 outputs = model(input_ids, token_type_ids=None, 
-                                attention_mask=input_mask, labels=labels)            
+                                attention_mask=input_mask, labels=labels)
+            
             
             loss = outputs[0]
             valid_loss.append(loss.item())
             logits = outputs[1]
-            valid_correct += torch.sum(torch.argmax(logits, 1) == labels).item()
+            valid_correct += torch.sum(torch.argmax(logits, 1) == labels).item()                                    
             
             #Add to tensorboard
             writer.add_scalar('Iteration Validation Loss', loss.item(), 
                               epoch*valid_size + i + 1)
             
         print("Validation Loss: " + str(np.mean(valid_loss)) + \
-              ", Validation Accuracy : " + str(valid_correct/(valid_size * args.batch_size)))
-              
+              ", Validation Accuracy : " + str(valid_correct/len(valid_iter.dataset)))
+               
         ### UPDATE TENSORBOARD ###
         writer.add_scalar('Epoch Training Loss', np.mean(train_loss), epoch)
         writer.add_scalar('Epoch Validation Loss', np.mean(valid_loss), epoch)
         writer.add_scalar('Epoch Training Accuracy', 
-                          train_correct/(train_size * args.batch_size), epoch)
+                          train_correct/len(train_iter.dataset), epoch)
         writer.add_scalar('Epoch Validation Accuracy', 
-                          valid_correct/(valid_size * args.batch_size), epoch)
+                          valid_correct/len(valid_iter.dataset), epoch)
         
         ### Save if Model gets best loss ###
         if np.mean(valid_loss) < best_loss:
@@ -156,7 +151,7 @@ def main():
     
     #Declare model
     model = BertForSequenceClassification.from_pretrained(
-        "bert-large-cased", # Use the 12-layer BERT model, with an uncased vocab.
+        "bert-base-cased", # Use the 12-layer BERT model, with an uncased vocab.
         num_labels = 2, # The number of output labels--2 for binary classification.
         output_attentions = False, # Whether the model returns attentions weights.
         output_hidden_states = False, # Whether the model returns all hidden-states.

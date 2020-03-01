@@ -4,7 +4,7 @@ import random
 import time
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
 from transformers import BertTokenizer, BertForSequenceClassification, AdamW, BertConfig, get_linear_schedule_with_warmup
-import utils
+from utils.bert_utils import tokenize, make_mask, format_time, flat_accuracy
 import torch
 
 # If there's a GPU available...
@@ -41,12 +41,12 @@ print('training labels: ', train_labels)
 print("Maximum length of training tweet: ", max([len(s) for s in train_sentences]))
 
 # Tokenize all of the sentences and map the tokens to their word IDs.
-train_input = utils.tokenize(train_sentences)
-val_input = utils.tokenize(val_sentences)
+train_input = tokenize(train_sentences)
+val_input = tokenize(val_sentences)
 
 # Create attention masks
-train_masks = utils.make_mask(train_input)
-val_masks = utils.make_mask(val_input)
+train_masks = make_mask(train_input)
+val_masks = make_mask(val_input)
 
 # Convert all inputs and labels into torch tensors, the required datatype
 # for our model.
@@ -87,7 +87,7 @@ validation_dataloader = DataLoader(validation_data, sampler=validation_sampler, 
 # Load BertForSequenceClassification, the pretrained BERT model with a single
 # linear classification layer on top.
 model = BertForSequenceClassification.from_pretrained(
-    "bert-large-cased", # Use the 12-layer BERT model, with an uncased vocab.
+    "bert-base-cased", # Use the 12-layer BERT model, with an uncased vocab.
     num_labels = 2, # The number of output labels--2 for binary classification.
     output_attentions = False, # Whether the model returns attentions weights.
     output_hidden_states = False, # Whether the model returns all hidden-states.
@@ -161,7 +161,7 @@ for epoch_i in range(0, epochs):
         # Progress update every 40 batches.
         if step % 40 == 0 and not step == 0:
             # Calculate elapsed time in minutes.
-            elapsed = utils.format_time(time.time() - t0)
+            elapsed = format_time(time.time() - t0)
 
             # Report progress.
             print('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.'.format(step, len(train_dataloader), elapsed))
@@ -228,7 +228,7 @@ for epoch_i in range(0, epochs):
 
     print("")
     print("  Average training loss: {0:.2f}".format(avg_train_loss))
-    print("  Training epcoh took: {:}".format(utils.format_time(time.time() - t0)))
+    print("  Training epcoh took: {:}".format(format_time(time.time() - t0)))
 
     # ========================================
     #               Validation
@@ -280,7 +280,7 @@ for epoch_i in range(0, epochs):
         label_ids = b_labels.to('cpu').numpy()
 
         # Calculate the accuracy for this batch of test sentences.
-        tmp_eval_accuracy = utils.flat_accuracy(logits, label_ids)
+        tmp_eval_accuracy = flat_accuracy(logits, label_ids)
 
         # Accumulate the total accuracy.
         eval_accuracy += tmp_eval_accuracy
@@ -290,7 +290,7 @@ for epoch_i in range(0, epochs):
 
     # Report the final accuracy for this validation run.
     print("  Accuracy: {0:.2f}".format(eval_accuracy / nb_eval_steps))
-    print("  Validation took: {:}".format(utils.format_time(time.time() - t0)))
+    print("  Validation took: {:}".format(format_time(time.time() - t0)))
 
 print("")
 print("Training complete!")
