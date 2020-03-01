@@ -26,28 +26,17 @@ def splitAndSaveData(filepath):
         pandas dataframe objects. Split is 70-15-15 train-valid-test
     '''
     data = pd.read_csv(filepath)    
+        
+    tv, test = train_test_split(data, test_size=0.15, random_state=1)
+    train, valid = train_test_split(tv, test_size=0.1765, random_state=1)
     
-    X_tv, X_test, y_tv, y_test = train_test_split(data['text'], \
-                                                      data['target'],
-                                                      test_size=0.15,
-                                                      random_state=1)
-    
-    X_train, X_val, y_train, y_val = train_test_split(X_tv, \
-                                                      y_tv,
-                                                      test_size=0.1765,
-                                                      random_state=1)
-    
-    X_train = cleanData(X_train)
-    X_val = cleanData(X_test)
-    X_test = cleanData(X_test)
-    
-    train_data = pd.DataFrame({'target' : y_train, \
-                               'text' : X_train})
-    valid_data = pd.DataFrame({'target' : y_val, \
-                               'text' : X_val})
-    test_data = pd.DataFrame({'target' : y_test, \
-                              'text' : X_test})
-    
+    train_data = pd.DataFrame({'target' : train['target'].values, \
+                               'text' : cleanData(train['text'].values)})
+    valid_data = pd.DataFrame({'target' : valid['target'].values, \
+                               'text' : cleanData(valid['text'].values)})
+    test_data = pd.DataFrame({'target' : test['target'].values, \
+                              'text' : cleanData(test['text'].values)})
+        
     train_data.to_csv('train.csv', index=False)
     valid_data.to_csv('valid.csv', index=False)
     test_data.to_csv('test.csv', index=False)
@@ -70,6 +59,8 @@ def cleanData(listOfText):
         for char in line:
             if char in 'qwertyuiopasdfghjklzxcvbnm 1234567890#,@':
                 clean_line += char
+            elif char == '.':
+                clean_line+= ''
             else:
                 clean_line += ' '
         
