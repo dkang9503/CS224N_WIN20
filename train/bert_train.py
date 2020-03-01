@@ -11,6 +11,7 @@ from bert_utils import returnDataloader
 import torch
 import argparse
 
+'''
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', '-m', required=True, help="Which dataset to use, without .csv suffix")
 parser.add_argument('--optimizer', '-opt', help="Which optimizer to use", nargs='?', type=str, default="adam")
@@ -21,6 +22,11 @@ parser.add_argument('--step_size', '-step', help="Step size for Learning Rate de
 parser.add_argument('--epochs', '-e', help="Number of Epochs", nargs='?', type=int, default=6)
 parser.add_argument('--batch_size', '-bs', help="Batch Size", nargs='?', type=int, default=16)
 args = parser.parse_args()
+'''
+
+from collections import namedtuple
+MyStruct = namedtuple("MyStruct", "dataset optimizer lr wd momentum step_size epochs batch_size")
+args = MyStruct("sr_alpha_0.1_num_aug_1", "adam", 2e-5, 1e-5, 9e-1, 10, 5, 32)
 
 def train(train_iter, valid_iter, model, device):
     # This training code is based on the `run_glue.py` script here:
@@ -98,7 +104,7 @@ def train(train_iter, valid_iter, model, device):
                               epoch*train_size + i + 1)
         
         print("Training Loss: " + str(np.mean(train_loss)) + \
-              ", Training Accuracy : " + str(train_correct/(train_size * args.batch_size)))
+              ", Training Accuracy : " + str(train_correct/len(train_iter.dataset)))
        
         ### VALIDATION ###        
         valid_loss = []
