@@ -7,7 +7,7 @@ from transformers import BertForSequenceClassification, get_linear_schedule_with
 from torch.utils.tensorboard import SummaryWriter
 import sys
 sys.path.insert(0, '../utils')
-from bert_utils import returnDataloader, flat_accuracy
+from bert_utils import returnDataloader, flat_accuracy, f_score, info
 import torch
 import argparse
 
@@ -102,7 +102,9 @@ def train(train_iter, valid_iter, model, device):
        
         ### VALIDATION ###        
         valid_loss = []
-        valid_correct = 0                    
+        valid_correct = 0
+
+        conf_matrix = torch.zeros(2, 2)
         
         model.eval()
         for i, batch in enumerate(valid_iter):
@@ -113,19 +115,26 @@ def train(train_iter, valid_iter, model, device):
             with torch.no_grad():
                 outputs = model(input_ids, token_type_ids=None, 
                                 attention_mask=input_mask, labels=labels)
-            
-            
+
             loss = outputs[0]
             valid_loss.append(loss.item())
             logits = outputs[1]
-            valid_correct += torch.sum(torch.argmax(logits, 1) == labels).item()                                    
-            
+            predict = torch.argmax(logits, 1)
+            valid_correct += torch.sum(predict == labels).item()
+
             #Add to tensorboard
             writer.add_scalar('Iteration Validation Loss', loss.item(), 
                               epoch*valid_size + i + 1)
-            
+
+            for t, p in zip(labels, predict):
+                conf_matrix[t, p] += 1
+
+
+
         print("Validation Loss: " + str(np.mean(valid_loss)) + \
               ", Validation Accuracy : " + str(valid_correct/len(valid_iter.dataset)))
+
+        J, sensitivity, specificity = info(conf_matrix)
                
         ### UPDATE TENSORBOARD ###
         writer.add_scalar('Epoch Training Loss', np.mean(train_loss), epoch)
@@ -134,7 +143,11 @@ def train(train_iter, valid_iter, model, device):
                           train_correct/len(train_iter.dataset), epoch)
         writer.add_scalar('Epoch Validation Accuracy', 
                           valid_correct/len(valid_iter.dataset), epoch)
-        
+        writer.add_scalar('F1 Score', f_score(conf_matrix)[0], epoch)
+        writer.add_scalar('Youdens', J, epoch)
+        writer.add_scalar('Sensitivity', sensitivity, epoch)
+        writer.add_scalar('Specificity', specificity, epoch)
+
         ### Save if Model gets best loss ###
         if np.mean(valid_loss) < best_loss:
             best_loss = np.mean(valid_loss)
@@ -160,6 +173,8 @@ def main():
     print(device)
     
     train(trainLoader, validLoader, model, device)
+
+    # calculate F score
     
 if __name__ == '__main__':
     main()
