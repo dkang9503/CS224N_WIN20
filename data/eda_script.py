@@ -21,7 +21,7 @@ def gen_eda(train_orig, output_file, da_type, alpha, num_aug=9):
 
     for i, target in enumerate(targets):        
         sentence = texts[i]
-        #Generate augmented sentences
+        #Generate augmented sentences        
         aug_sentences = eda(sentence, da_type, alpha_sr=alpha, alpha_ri=alpha,\
                             alpha_rs=alpha, p_rd=alpha, num_aug=num_aug)
         
@@ -38,9 +38,8 @@ def gen_eda(train_orig, output_file, da_type, alpha, num_aug=9):
     newData.to_csv(output_file, index=False)
             
 
-if __name__ == "__main__":
-        
-    da_type = args.da_type.split(' ')
+if __name__ == "__main__":    
+    da_type = args.da_type.split('_')
     join_char = "_"
     output = join_char.join(da_type) + "_alpha_" + str(args.alpha) \
                 + "_num_aug_" + str(args.num_aug) + ".csv"
