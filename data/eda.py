@@ -3,6 +3,7 @@
 
 import random
 from random import shuffle
+import math
 random.seed(1)
 
 #stop words list
@@ -178,7 +179,8 @@ def eda(sentence, da_type=['sr'], alpha_sr=0.1, alpha_ri=0.1, alpha_rs=0.1, p_rd
     num_words = len(words)
 	
     augmented_sentences = []
-    num_new_per_technique = int(num_aug/len(da_type))
+    num_new_per_technique = math.ceil(num_aug/len(da_type))
+        
     n_sr = max(1, int(alpha_sr*num_words))
     n_ri = max(1, int(alpha_ri*num_words))
     n_rs = max(1, int(alpha_rs*num_words))
@@ -211,6 +213,8 @@ def eda(sentence, da_type=['sr'], alpha_sr=0.1, alpha_ri=0.1, alpha_rs=0.1, p_rd
     shuffle(augmented_sentences)
 
     #trim so that we have the desired number of augmented sentences
+    if len(da_type) >= 1:
+        augmented_sentences = augmented_sentences[:num_aug]
     '''
     if num_aug >= 1:
         augmented_sentences = augmented_sentences[:num_aug]
