@@ -1,6 +1,6 @@
 import torch
 from allennlp.data.instance import Instance
-from typing import List, Dict, Union, Callable, Optional
+from typing import List, Dict, Union, Callable, Optional, Iterator
 import numpy as np
 import pandas as pd
 from torch.utils.data import DataLoader
@@ -70,7 +70,7 @@ def returnDataLoader(filepath, batch_size):
     filler = iterator(dataset, num_epochs = 1)
     for batch in filler:
         pass
-    dataloader = DataLoader(dataset, batch_size=batch_size, collate_fn=allennlp_collate)    
+    dataloader = DataLoader(dataset, batch_size=batch_size, collate_fn=allennlp_collate, shuffle = True)    
     
     return dataloader
         
