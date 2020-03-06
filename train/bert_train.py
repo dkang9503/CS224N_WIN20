@@ -7,7 +7,8 @@ from transformers import BertForSequenceClassification, get_linear_schedule_with
 from torch.utils.tensorboard import SummaryWriter
 import sys
 sys.path.insert(0, '../utils')
-from bert_utils import returnDataloader, flat_accuracy, f_score, info
+from bert_utils import returnDataloader
+from train_utils import flat_accuracy, f_score, info
 import torch
 import argparse
 
@@ -63,7 +64,7 @@ def train(train_iter, valid_iter, model, device):
     torch.manual_seed(seed_val)
     torch.cuda.manual_seed_all(seed_val)
           
-    model.zero_grad()    
+    model.zero_grad()
     
     for epoch in range(args.epochs):
         ### TRAINING ###

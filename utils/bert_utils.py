@@ -7,20 +7,6 @@ from transformers import BertTokenizer
 print('Loading BERT tokenizer...')
 tokenizer = BertTokenizer.from_pretrained('bert-large-cased', do_lower_case = False)
 
-# calculate f_score from a confusion matrix
-def f_score(c):
-    p = c[1, 1] / (c[1, 1] + c[0, 1])
-    r = c[1, 1] / (c[1, 1] + c[0, 0])
-    f = 2 * p * r / (p + r)
-    return f, p, r
-
-# calcualte the specificity, sensitivity, and youden's stat from a confusion matrix
-def info(c):
-    sen = c[1, 1] / (c[1, 1] + c[1, 0])
-    spe = c[0, 0] / (c[0, 0] + c[0, 1])
-    J = sen + spe - 1
-    return J, sen, spe
-
 # Tokenizes sentences for BERT. Argument is a pandas dataframe
 def tokenize(sentences):
     # Tokenize all of the sentences and map the tokens to their word IDs.
@@ -64,13 +50,6 @@ def make_mask(sentences):
         attention_masks.append(att_mask)
 
     return attention_masks
-
-# Function to calculate the accuracy of our predictions vs labels
-def flat_accuracy(preds, labels):
-    pred_flat = np.argmax(preds, axis=1).flatten()
-    labels_flat = labels.flatten()
-    return np.sum(pred_flat == labels_flat) / len(labels_flat)
-
 
 #Takes a time in seconds and returns a string hh:mm:ss
 def format_time(elapsed):

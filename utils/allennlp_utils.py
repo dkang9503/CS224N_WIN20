@@ -1,6 +1,6 @@
 import torch
 from allennlp.data.instance import Instance
-from typing import List, Dict, Union, Callable, Optional
+from typing import List, Dict, Union, Callable, Optional, Iterator
 import numpy as np
 import pandas as pd
 from torch.utils.data import DataLoader
@@ -12,7 +12,7 @@ from allennlp.data.tokenizers import Token
 from allennlp.data.fields import TextField, ArrayField
 from allennlp.data.tokenizers.word_splitter import SpacyWordSplitter
 from allennlp.data.iterators import BucketIterator
-from allennlp.data.token_indexers.elmo_indexer import ELMoCharacterMapper, ELMoTokenCharactersIndexer
+from allennlp.data.token_indexers.elmo_indexer import ELMoTokenCharactersIndexer
 from allennlp.data.vocabulary import Vocabulary
 
 TensorDict = Dict[str, Union[torch.Tensor, Dict[str, torch.Tensor]]]
