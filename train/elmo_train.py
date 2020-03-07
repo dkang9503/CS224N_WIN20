@@ -17,7 +17,7 @@ from elmo import returnElmoModel
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', '-m', required=True, help="Which dataset to use, without .csv suffix")
 parser.add_argument('--optimizer', '-opt', help="Which optimizer to use", nargs='?', type=str, default="adam")
-parser.add_argument('--lr', '-lr', help="Learning Rate", nargs='?', type=int, default=2e-5)
+parser.add_argument('--lr', '-lr', help="Learning Rate", nargs='?', type=int, default=3e-3)
 parser.add_argument('--wd', '-wd', help="Weight Decay")
 parser.add_argument('--momentum', '-mo', help="Momentum", nargs='?', type=int, default=9e-1)
 parser.add_argument('--step_size', '-step', help="Step size for Learning Rate decay")
@@ -69,25 +69,38 @@ def valid_one_epoch(epoch, valid_size, model, device, valid_iter, epoch_pbar,
                     optimizer, scheduler, writer, loss_fcn, conf_matrix):
     valid_loss = []
     valid_correct = 0
-    
+    acc_loss = 0
+    acc_avg = 0
+        
     for i, batch in enumerate(valid_iter):
         tokens = batch['tokens']
-        tokens['batch'] = tokens['tokens'].to(device)
-        labels = batch['label'].to(device) 
+        tokens['tokens'] = tokens['tokens'].to(device)
+        labels = batch['label'].to(device)         
 
         with torch.no_grad():
             outputs = model(tokens)
 
         loss = loss_fcn(outputs, labels)
         valid_loss.append(loss.item())
+        acc_loss += loss.item()                
         logits = torch.sigmoid(outputs)
         predict = logits >= .5
         valid_correct += torch.sum(predict == labels).item()
+        
+        #Update progress bar
+        avg_loss = acc_loss/(i + 1)                
+        acc_avg = valid_correct/((i+1) * 16)
+        desc = f"Epoch {epoch} - loss {avg_loss:.4f} - acc {acc_avg:.4f}"
+        epoch_pbar.set_description(desc)
+        epoch_pbar.update(1)
 
         #Add to tensorboard
         writer.add_scalar('Iteration Validation Loss', loss.item(), 
                           epoch*valid_size + i + 1)
 
+        #Conver to indices
+        labels = labels.long()
+        predict = predict.long()
         for t, p in zip(labels, predict):
             conf_matrix[t, p] += 1            
         
@@ -160,8 +173,7 @@ def train(train_iter, valid_iter, model, device):
         conf_matrix = torch.zeros(2, 2)
                 
         with tqdm(total = valid_size) as epoch_pbar:
-            model.eval()    
-            #valid_loss, valid_correct
+            model.eval()                           
             valid_loss, valid_correct, conf_matrix = valid_one_epoch(epoch, valid_size, model, 
                                                                      device, valid_iter, epoch_pbar, 
                                                                      optimizer, scheduler, writer, 
@@ -184,13 +196,13 @@ def train(train_iter, valid_iter, model, device):
         ### Save if Model gets best loss ###
         if np.mean(valid_loss) < best_loss:
             best_loss = np.mean(valid_loss)
-            torch.save(model.state_dict(), "../../saved_models/elmo" + log_dir_suffix + ".pth")
+            torch.save(model.state_dict(), "../../saved_models/elmo/" + log_dir_suffix + ".pth")
 
 def main():
     print(args)
     #Load Data, probably add more here as we have more data augmentation data    
     trainLoader = returnDataLoader('../data/' + args.dataset + ".csv" , args.batch_size)
-    validLoader = returnDataLoader('../data/valid.csv' , args.batch_size)
+    validLoader = returnDataLoader('../data/valid.csv' , args.batch_size)    
     
     #Declare model
     model = returnElmoModel()
