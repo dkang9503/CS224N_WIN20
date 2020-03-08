@@ -127,7 +127,7 @@ def augment(sentence, da, alpha, num_aug, alpha_char):
         augmented_sentences = augmented_sentences[:num_aug]
 
     if len(augmented_sentences) < num_aug:
-        augmented_sentences += [augmented_sentences[-1]]*(num_aug-len(augmented_sentences))
+        augmented_sentences += [sentence]*(num_aug-len(augmented_sentences))
 
     # Return
     return augmented_sentences

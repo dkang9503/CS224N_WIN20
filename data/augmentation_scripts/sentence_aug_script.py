@@ -75,6 +75,9 @@ def augment(sentence, num_aug, gen_model):
     augmented_sentences = [get_only_chars(sentence) for sentence in augmented_sentences]
     np.random.shuffle(augmented_sentences)
 
+    if len(augmented_sentences) < num_aug:
+        augmented_sentences += [sentence] * (num_aug - len(augmented_sentences))
+
     # Return
     return augmented_sentences
 
