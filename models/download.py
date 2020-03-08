@@ -165,8 +165,8 @@ class DownloadUtil:
 
 
 def main():
-  DownloadUtil.download_glove(model_name=sys.argv[1], dest_dir='.') # Download GloVe model
-  DownloadUtil.download_word2vec(dest_dir='.') # Download word2vec model
+  DownloadUtil.download_glove(model_name=sys.argv[1], dest_dir='./saved_models/') # Download GloVe model
+  DownloadUtil.download_word2vec(dest_dir='./saved_models/') # Download word2vec model
 
 
 
