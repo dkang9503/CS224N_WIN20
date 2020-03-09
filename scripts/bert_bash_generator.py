@@ -4,7 +4,7 @@ output = "aug2_bert_train.sh"
 
 files = os.listdir('../data/aug2_data/')
 # remove extensions
-files = [f.split('.')[0] for f in files]
+files = [f[:-4] for f in files]
 
 with open(output_dir + output, 'w') as f:
     f.write("#!/bin/bash\n")
