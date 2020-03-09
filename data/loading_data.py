@@ -75,8 +75,8 @@ def cleanData(listOfText):
     return toReturn
         
 
-def createIterators(train_data, valid_data, test_data, batch_size=32, \
-                    write=False, path="../Data/"):
+def createIterators(train_data, valid_data, test_data, path, batch_size=16, \
+                    write=False):
     '''
         Given train/valid/test pandas dataframe objects, creates 
         iterators for all three datasets and returns them
@@ -88,9 +88,9 @@ def createIterators(train_data, valid_data, test_data, batch_size=32, \
     
     train, valid, test = TabularDataset.splits(
                path = ".",
-               train = path+"train.csv", 
-               validation = path+"valid.csv",
-               test = path+"test.csv",
+               train = f"../Data/{path}.csv", 
+               validation = "../Data/valid.csv",
+               test = "../Data/test.csv",
                format='csv',
                skip_header=True, 
                fields=tv_datafields)
