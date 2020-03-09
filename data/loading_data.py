@@ -88,9 +88,9 @@ def createIterators(train_data, valid_data, test_data, path, batch_size=16, \
     
     train, valid, test = TabularDataset.splits(
                path = ".",
-               train = f"../Data/{path}.csv", 
-               validation = "../Data/valid.csv",
-               test = "../Data/test.csv",
+               train = f"../data/{path}.csv", 
+               validation = "../data/valid.csv",
+               test = "../data/test.csv",
                format='csv',
                skip_header=True, 
                fields=tv_datafields)
