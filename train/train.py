@@ -190,11 +190,11 @@ def train(train_iter, valid_iter, model, device):
         writer.add_scalar('Specificity', specificity, epoch)
 
         ### Save if Model gets best loss ###
-        '''
+        
         if np.mean(valid_loss) < best_loss:
             best_loss = np.mean(valid_loss)
             torch.save(model.state_dict(), "../../saved_models/elmo/" + log_dir_suffix + ".pth")
-        '''
+        
 def main():    
     print(args)    
     
