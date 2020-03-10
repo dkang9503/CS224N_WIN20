@@ -29,6 +29,8 @@ def train(train_iter, valid_iter, model, device):
     
     train_size = len(train_iter)
     valid_size = len(valid_iter)
+	train_num_examples = len(train_iter.dataset)
+	valid_num_examples = len(valid_iter.dataset)
     
     #Set model to either cpu or gpu
     model.to(device)
@@ -39,14 +41,12 @@ def train(train_iter, valid_iter, model, device):
     elif args.optimizer == "sgd":
         optimizer = torch.optim.SGD(model.parameters(), lr = args.lr, 
                                      weight_decay = args.weight_decay, 
-                                     momentum = args.momentum)    
-        
-    total_steps = len(train_iter) * args.epochs
+                                     momentum = args.momentum)           
     
     #Create linear lr scheduler
     scheduler = get_linear_schedule_with_warmup(optimizer,
                                             num_warmup_steps = 0, # Default value in run_glue.py
-                                            num_training_steps = total_steps)    
+                                            num_training_steps = train_num_examples)    
     
     #Create Tensorboard    
     today = date.today()
@@ -99,7 +99,7 @@ def train(train_iter, valid_iter, model, device):
                               epoch*train_size + i + 1)
         
         print("Training Loss: " + str(np.mean(train_loss)) + \
-              ", Training Accuracy : " + str(train_correct/len(train_iter.dataset)))
+              ", Training Accuracy : " + str(train_correct/train_num_examples))
        
         ### VALIDATION ###        
         valid_loss = []
@@ -133,17 +133,18 @@ def train(train_iter, valid_iter, model, device):
 
 
         print("Validation Loss: " + str(np.mean(valid_loss)) + \
-              ", Validation Accuracy : " + str(valid_correct/len(valid_iter.dataset)))
+              ", Validation Accuracy : " + str(valid_correct/valid_num_examples))
 
         J, sensitivity, specificity = info(conf_matrix)
                
         ### UPDATE TENSORBOARD ###
+		print(epoch)
         writer.add_scalar('Epoch Training Loss', np.mean(train_loss), epoch)
         writer.add_scalar('Epoch Validation Loss', np.mean(valid_loss), epoch)
         writer.add_scalar('Epoch Training Accuracy', 
-                          train_correct/len(train_iter.dataset), epoch)
+                          train_correct/train_num_examples, epoch)
         writer.add_scalar('Epoch Validation Accuracy', 
-                          valid_correct/len(valid_iter.dataset), epoch)
+                          valid_correct/valid_num_examples, epoch)
         writer.add_scalar('F1 Score', f_score(conf_matrix)[0], epoch)
         writer.add_scalar('Youdens', J, epoch)
         writer.add_scalar('Sensitivity', sensitivity, epoch)
