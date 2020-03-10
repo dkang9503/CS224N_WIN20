@@ -7,7 +7,7 @@ from transformers import BertForSequenceClassification, get_linear_schedule_with
 from torch.utils.tensorboard import SummaryWriter
 import sys
 sys.path.insert(0, '../utils')
-from bert_utils import returnDataloader
+from bert_utils import returnBertDataLoader
 from train_utils import flat_accuracy, f_score, info
 import torch
 import argparse
@@ -163,8 +163,8 @@ def main():
     train_data = pd.read_csv('../data/' + args.dataset + ".csv")
     valid_data = pd.read_csv('../data/valid.csv')    
     
-    trainLoader = returnDataloader(train_data, args.batch_size)
-    validLoader = returnDataloader(valid_data, args.batch_size)
+    trainLoader = returnBertDataLoader(train_data, args.batch_size)
+    validLoader = returnBertDataLoader(valid_data, args.batch_size)
     
     #Declare model
     model = BertForSequenceClassification.from_pretrained(

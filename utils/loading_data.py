@@ -75,8 +75,7 @@ def cleanData(listOfText):
     return toReturn
         
 
-def createIterators(train_data, valid_data, test_data, path, batch_size=16, \
-                    write=False):
+def returnLSTMDataLoader(path="train", batch_size=16, write=False):
     '''
         Given train/valid/test pandas dataframe objects, creates 
         iterators for all three datasets and returns them
@@ -125,7 +124,7 @@ if __name__ == '__main__':
     train_data, valid_data, test_data =splitAndSaveData('original_data_file_no_url.csv')    
     
     #Create iterators with data
-    train_iter, valid_iter, test_iter = createIterators(train_data, valid_data, test_data)    
+    train_iter, valid_iter, test_iter = returnLSTMDataLoader(train_data, valid_data, test_data)    
     
     #run this line to see how the batch iterator works
     # next(train_iter.__iter__())

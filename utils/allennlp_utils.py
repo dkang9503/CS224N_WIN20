@@ -56,7 +56,7 @@ class TweetDatasetReader(DatasetReader):
                 np.array([row["target"]]),
             )
 
-def returnDataLoader(filepath, batch_size):
+def returnElmoDataLoader(filepath, batch_size):
     token_indexer = ELMoTokenCharactersIndexer()
     reader = TweetDatasetReader(tokenizer=tokenizer, 
                                 token_indexers={"tokens": token_indexer})

@@ -10,7 +10,7 @@ import argparse
 import sys
 sys.path.insert(0, '../utils')
 from train_utils import f_score, info
-from allennlp_utils import returnDataLoader
+from allennlp_utils import returnElmoDataLoader
 sys.path.insert(0, '../models')
 from elmo import returnElmoModel
 
@@ -201,8 +201,8 @@ def train(train_iter, valid_iter, model, device):
 def main():
     print(args)
     #Load Data, probably add more here as we have more data augmentation data    
-    trainLoader = returnDataLoader('../data/' + args.dataset + ".csv" , args.batch_size)
-    validLoader = returnDataLoader('../data/valid.csv' , args.batch_size)    
+    trainLoader = returnElmoDataLoader('../data/' + args.dataset + ".csv" , args.batch_size)
+    validLoader = returnElmoDataLoader('../data/valid.csv' , args.batch_size)    
     
     #Declare model
     model = returnElmoModel()
