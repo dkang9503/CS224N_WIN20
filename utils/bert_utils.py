@@ -78,6 +78,6 @@ def returnBertDataLoader(data, batch_size, shuffle=True):
     # Create the DataLoader
     dataset = TensorDataset(tokens, masks, labels)
     sampler = RandomSampler(dataset)
-    dataloader = DataLoader(dataset, sampler=sampler, batch_size=batch_size, shuffle=shuffle)
+    dataloader = DataLoader(dataset, sampler=sampler, batch_size=batch_size)
     
     return dataloader
