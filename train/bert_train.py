@@ -29,8 +29,8 @@ def train(train_iter, valid_iter, model, device):
     
     train_size = len(train_iter)
     valid_size = len(valid_iter)
-	train_num_examples = len(train_iter.dataset)
-	valid_num_examples = len(valid_iter.dataset)
+    train_num_examples = len(train_iter.dataset)
+    valid_num_examples = len(valid_iter.dataset)
     
     #Set model to either cpu or gpu
     model.to(device)
@@ -52,7 +52,7 @@ def train(train_iter, valid_iter, model, device):
     today = date.today()
     date_prefix = today.strftime("%m_%d")
     log_dir_suffix = f"{date_prefix}_BERT_{args.dataset}_lr_{args.lr}_epochs_{args.epochs}_batch_size_{args.batch_size}"
-    log_dir = "../logs/" + log_dir_suffix
+    log_dir = "../logs/bert_fix/" + log_dir_suffix
     writer = SummaryWriter(log_dir=log_dir)
     
     best_loss = 1e9
@@ -138,7 +138,7 @@ def train(train_iter, valid_iter, model, device):
         J, sensitivity, specificity = info(conf_matrix)
                
         ### UPDATE TENSORBOARD ###
-		print(epoch)
+        print(epoch)
         writer.add_scalar('Epoch Training Loss', np.mean(train_loss), epoch)
         writer.add_scalar('Epoch Validation Loss', np.mean(valid_loss), epoch)
         writer.add_scalar('Epoch Training Accuracy', 
@@ -151,9 +151,11 @@ def train(train_iter, valid_iter, model, device):
         writer.add_scalar('Specificity', specificity, epoch)
 
         ### Save if Model gets best loss ###
+        '''
         if np.mean(valid_loss) < best_loss:
             best_loss = np.mean(valid_loss)
             torch.save(model.state_dict(), "../../saved_models/" + log_dir_suffix + ".pth")
+        '''
 
 def main():
     print(args)
