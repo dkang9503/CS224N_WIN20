@@ -59,7 +59,7 @@ def format_time(elapsed):
     # Format as hh:mm:ss
     return str(datetime.timedelta(seconds=elapsed_rounded))
 
-def returnDataloader(data, batch_size):
+def returnDataloader(data, batch_size, shuffle=True):
     sentences = data.text.values
     labels = data.target.values
     
@@ -78,6 +78,6 @@ def returnDataloader(data, batch_size):
     # Create the DataLoader
     dataset = TensorDataset(tokens, masks, labels)
     sampler = RandomSampler(dataset)
-    dataloader = DataLoader(dataset, sampler=sampler, batch_size=batch_size)
+    dataloader = DataLoader(dataset, sampler=sampler, batch_size=batch_size, shuffle=shuffle)
     
     return dataloader
