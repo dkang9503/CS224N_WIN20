@@ -11,7 +11,6 @@ from torch.utils.tensorboard import SummaryWriter
 import sys
 sys.path.insert(0, '../utils')
 from train_utils import f_score, info
-sys.path.insert(0, '../data')
 from loading_data import createIterators
 sys.path.insert(0, '../models')
 from baseline_model import baselineModel
