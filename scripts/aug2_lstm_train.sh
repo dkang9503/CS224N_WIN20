@@ -1,19 +1,8 @@
 #!/bin/bash
-python ../train/train.py --dataset=aug2_data/contextin_alpha_0.1_num_aug_1
-python ../train/train.py --dataset=aug2_data/contextin_alpha_0.3_num_aug_1
-python ../train/train.py --dataset=aug2_data/contextsub_alpha_0.1_num_aug_1
-python ../train/train.py --dataset=aug2_data/contextsub_alpha_0.3_num_aug_1
-python ../train/train.py --dataset=aug2_data/glovetwit_alpha_0.1_num_aug_1
-python ../train/train.py --dataset=aug2_data/glovetwit_alpha_0.1_num_aug_3
-python ../train/train.py --dataset=aug2_data/glovetwit_alpha_0.3_num_aug_1
-python ../train/train.py --dataset=aug2_data/glovetwit_alpha_0.3_num_aug_3
-python ../train/train.py --dataset=aug2_data/key_alpha_0.25_alpha_char_0.1_num_aug_1
-python ../train/train.py --dataset=aug2_data/key_alpha_0.25_alpha_char_0.1_num_aug_3
-python ../train/train.py --dataset=aug2_data/key_alpha_0.25_alpha_char_0.3_num_aug_1
-python ../train/train.py --dataset=aug2_data/key_alpha_0.25_alpha_char_0.3_num_aug_3
-python ../train/train.py --dataset=aug2_data/ocr_alpha_0.25_alpha_char_0.1_num_aug_1
-python ../train/train.py --dataset=aug2_data/ocr_alpha_0.25_alpha_char_0.1_num_aug_3
-python ../train/train.py --dataset=aug2_data/ocr_alpha_0.25_alpha_char_0.3_num_aug_1
-python ../train/train.py --dataset=aug2_data/ocr_alpha_0.25_alpha_char_0.3_num_aug_3
-python ../train/train.py --dataset=aug2_data/sentence_gen_num_aug_1_model_gpt2
-python ../train/train.py --dataset=aug2_data/sentence_gen_num_aug_3_model_gpt2
+python ../train/train.py --dataset=aug2_data/multiple/key_consub_combined
+python ../train/train.py --dataset=aug2_data/multiple/ocr_consub_combined
+python ../train/train.py --dataset=aug2_data/multiple/key_twit_combined
+python ../train/train.py --dataset=aug2_data/multiple/ocr_twit_combined
+python ../train/train.py --dataset=aug2_data/multiple/key_twit_consub_combined
+python ../train/train.py --dataset=aug2_data/multiple/ocr_twit_consub_combined
+python ../train/train.py --dataset=aug2_data/multiple/twit_consub_combined
