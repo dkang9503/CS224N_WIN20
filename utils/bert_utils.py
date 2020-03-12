@@ -59,7 +59,7 @@ def format_time(elapsed):
     # Format as hh:mm:ss
     return str(datetime.timedelta(seconds=elapsed_rounded))
 
-def returnDataloader(data, batch_size):
+def returnBertDataLoader(data, batch_size, shuffle=True):
     sentences = data.text.values
     labels = data.target.values
     

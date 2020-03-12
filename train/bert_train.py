@@ -7,7 +7,7 @@ from transformers import BertForSequenceClassification, get_linear_schedule_with
 from torch.utils.tensorboard import SummaryWriter
 import sys
 sys.path.insert(0, '../utils')
-from bert_utils import returnDataloader
+from bert_utils import returnBertDataLoader
 from train_utils import flat_accuracy, f_score, info
 import torch
 import argparse
@@ -52,7 +52,7 @@ def train(train_iter, valid_iter, model, device):
     today = date.today()
     date_prefix = today.strftime("%m_%d")
     log_dir_suffix = f"{date_prefix}_BERT_{args.dataset}_lr_{args.lr}_epochs_{args.epochs}_batch_size_{args.batch_size}"
-    log_dir = "../logs/bert_fix/" + log_dir_suffix
+    log_dir = "../logs/BERT/" + log_dir_suffix
     writer = SummaryWriter(log_dir=log_dir)
     
     best_loss = 1e9
@@ -151,11 +151,11 @@ def train(train_iter, valid_iter, model, device):
         writer.add_scalar('Specificity', specificity, epoch)
 
         ### Save if Model gets best loss ###
-        '''
+        
         if np.mean(valid_loss) < best_loss:
             best_loss = np.mean(valid_loss)
             torch.save(model.state_dict(), "../../saved_models/" + log_dir_suffix + ".pth")
-        '''
+        
 
 def main():
     print(args)
@@ -163,8 +163,8 @@ def main():
     train_data = pd.read_csv('../data/' + args.dataset + ".csv")
     valid_data = pd.read_csv('../data/valid.csv')    
     
-    trainLoader = returnDataloader(train_data, args.batch_size)
-    validLoader = returnDataloader(valid_data, args.batch_size)
+    trainLoader = returnBertDataLoader(train_data, args.batch_size)
+    validLoader = returnBertDataLoader(valid_data, args.batch_size)
     
     #Declare model
     model = BertForSequenceClassification.from_pretrained(

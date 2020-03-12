@@ -20,7 +20,7 @@ class BatchWrapper:
     def __len__(self):
         return len(self.dl)   
 
-def splitAndSaveData(filepath):
+def splitAndSaveData(filepath, conf=False):
     '''
         Given filepath of original dataset, will split data and return 3
         pandas dataframe objects. Split is 70-15-15 train-valid-test
@@ -31,15 +31,26 @@ def splitAndSaveData(filepath):
     train, valid = train_test_split(tv, test_size=0.1765, random_state=1)
     
     train_data = pd.DataFrame({'target' : train['target'].values, \
-                               'text' : cleanData(train['text'].values)})
+                               'text' : cleanData(train['text'].values),
+                               'conf': train['choose_one:confidence']})
     valid_data = pd.DataFrame({'target' : valid['target'].values, \
-                               'text' : cleanData(valid['text'].values)})
+                               'text' : cleanData(valid['text'].values),
+                               'conf': valid['choose_one:confidence']})
     test_data = pd.DataFrame({'target' : test['target'].values, \
-                              'text' : cleanData(test['text'].values)})
+                              'text' : cleanData(test['text'].values),
+                              'conf': test['choose_one:confidence']})
+    if conf:        
+        train_data.to_csv('../data/train_conf.csv', index=False)
+        valid_data.to_csv('../data/valid_conf.csv', index=False)
+        test_data.to_csv('../data/test_conf.csv', index=False)
+    else:
+        train_data = train_data[['target', 'text']]
+        valid_data = valid_data[['target', 'text']]
+        test_data = test_data[['target', 'text']]
         
-    train_data.to_csv('train.csv', index=False)
-    valid_data.to_csv('valid.csv', index=False)
-    test_data.to_csv('test.csv', index=False)
+        train_data.to_csv('../data/train.csv', index=False)
+        valid_data.to_csv('../data/valid.csv', index=False)
+        test_data.to_csv('../data/test.csv', index=False)
     
     return train_data, valid_data, test_data
 
@@ -75,8 +86,7 @@ def cleanData(listOfText):
     return toReturn
         
 
-def createIterators(train_data, valid_data, test_data, path, batch_size=16, \
-                    write=False):
+def returnLSTMDataLoader(path="train", batch_size=16, write=False):
     '''
         Given train/valid/test pandas dataframe objects, creates 
         iterators for all three datasets and returns them
@@ -122,10 +132,10 @@ def createIterators(train_data, valid_data, test_data, path, batch_size=16, \
 
 if __name__ == '__main__':
     #Split data into train/val/test from original data csv
-    train_data, valid_data, test_data =splitAndSaveData('original_data_file_no_url.csv')    
+    train_data, valid_data, test_data =splitAndSaveData('../data/original_data_file_no_url.csv', True)    
     
     #Create iterators with data
-    train_iter, valid_iter, test_iter = createIterators(train_data, valid_data, test_data)    
+    train_iter, valid_iter, test_iter = returnLSTMDataLoader(train_data, valid_data, test_data)    
     
     #run this line to see how the batch iterator works
     # next(train_iter.__iter__())

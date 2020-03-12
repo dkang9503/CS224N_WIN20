@@ -11,7 +11,7 @@ from torch.utils.tensorboard import SummaryWriter
 import sys
 sys.path.insert(0, '../utils')
 from train_utils import f_score, info
-from loading_data import createIterators
+from loading_data import returnLSTMDataLoader
 sys.path.insert(0, '../models')
 from baseline_model import baselineModel
 
@@ -197,19 +197,12 @@ def train(train_iter, valid_iter, model, device):
 def main():    
     print(args)    
     
-    #Load Data, probably add more here as we have more data augmentation data
-    train_data = pd.read_csv(f'../data/{args.dataset}.csv')
-    valid_data = pd.read_csv('../data/valid.csv')
-    test_data = pd.read_csv('../data/test.csv')
-    
-    train_iter, valid_iter, test_iter= createIterators(train_data, 
-                                                       valid_data, 
-                                                       test_data,
-                                                       path = args.dataset,
+    #Load Data, probably add more here as we have more data augmentation data    
+    train_iter, valid_iter, test_iter= returnLSTMDataLoader(path = args.dataset,
                                                        batch_size = args.batch_size)
     
     #Declare model and load GloVe
-    model = baselineModel(256, train_iter.dl.dataset.fields['text'])    
+    model = baselineModel(256, train_iter.dl.dataset.fields['text'])
     model.embedding.weight = torch.nn.Parameter(train_iter.dl.dataset.fields['text'].vocab.vectors)    
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(device)
